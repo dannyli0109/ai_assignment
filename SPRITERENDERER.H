@@ -20,10 +20,12 @@ namespace Systems {
 				if (sprites.elements.size() > sprites.index)
 				{
 					const Components::Sprite& sprite = sprites.elements[sprites.index];
-					Rectangle sourceRec{ sprite.x, sprite.y, sprite.width, sprite.height };
-					Rectangle destRec{ transform.position.x, transform.position.y, rect.width, rect.height };
-					Vector2 origin{ rect.offX, rect.offY };
-					DrawTexturePro(*sprite.texture, sourceRec, destRec, origin, transform.rotation, WHITE);
+					if (sprite.texture) {
+						Rectangle sourceRec{ sprite.x, sprite.y, sprite.width, sprite.height };
+						Rectangle destRec{ transform.position.x, transform.position.y, rect.width, rect.height };
+						Vector2 origin{ rect.offX, rect.offY };
+						DrawTexturePro(*sprite.texture, sourceRec, destRec, origin, transform.rotation, WHITE);
+					}
 				}
 			}
 		}

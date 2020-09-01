@@ -7,13 +7,17 @@
 #include "Transform.h"
 #include "RigidBody.h"
 #include "SpriteAnimation.h"
+#include "Decision.h"
+#include "Tile.h"
 
 #include "SpriteRenderer.h"
 #include "SpriteAnimator.h"
 #include "Physics.h"
+#include "Tilemap.h"
 
 #include <vector>
 #include <sstream>
+#include <fstream>
 
 class Game
 {
@@ -27,8 +31,11 @@ private:
 	void RegisterComponents();
 	void RegisterSystems();
 	void CreateTextureManager();
-private:
 	Entity CreateGridCell(int i, int j);
+	void CreateChicken();
+	void LoadTileMap();
+	void CreateDecisionTree();
+private:
 	std::vector<std::vector<Entity>> mGrid;
 	unsigned int mRows;
 	unsigned int mCols;
@@ -40,4 +47,5 @@ private:
 	Systems::SpriteRenderer* mSpriteRenderer;
 	Systems::Physics* mPhysics;
 	Systems::SpriteAnimator* mSpriteAnimator;
+	Systems::TileMap* mTileMap;
 };

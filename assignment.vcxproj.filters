@@ -67,5 +67,20 @@
     <ClInclude Include="SpriteAnimator.h">
       <Filter>Systems</Filter>
     </ClInclude>
+    <ClInclude Include="Decision.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="State.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Agent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Tile.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Tilemap.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

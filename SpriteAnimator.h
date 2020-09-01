@@ -19,7 +19,7 @@ namespace Systems {
 				if (spriteAnimation.time >= spriteAnimation.speed)
 				{
 					spriteAnimation.time -= spriteAnimation.speed;
-					std::vector<int> currentAnimation = spriteAnimation.frames[spriteAnimation.index];
+					std::vector<int> currentAnimation = spriteAnimation.frames[spriteAnimation.state];
 					spriteAnimation.frame = (spriteAnimation.frame + 1) % currentAnimation.size();
 					int nextIndex = currentAnimation[spriteAnimation.frame];
 					sprites.index = nextIndex;

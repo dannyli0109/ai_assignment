@@ -156,7 +156,9 @@
     <ClCompile Include="TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Agent.h" />
     <ClInclude Include="AStar.h" />
+    <ClInclude Include="Decision.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="AStarNode.h" />
     <ClInclude Include="Physics.h" />
@@ -166,7 +168,10 @@
     <ClInclude Include="SpriteAnimation.h" />
     <ClInclude Include="SpriteAnimator.h" />
     <ClInclude Include="SpriteRenderer.h" />
+    <ClInclude Include="State.h" />
     <ClInclude Include="TextureManager.h" />
+    <ClInclude Include="Tile.h" />
+    <ClInclude Include="Tilemap.h" />
     <ClInclude Include="Transform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
