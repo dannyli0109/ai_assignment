@@ -27,7 +27,7 @@ void Game::Init()
 
 	LoadTileMap();
 
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < 1; i++)
 	{
 		Entity chicken = CreateChicken();
 		mChickens.push_back(chicken);
@@ -194,6 +194,7 @@ void Game::CreateTextureManager()
 	}
 
 	tm->LoadTexture("chicken_walk", "resources/chicken_walk.png");
+	tm->LoadTexture("chicken_eat", "resources/chicken_eat.png");
 	tm->LoadTexture("pixel_pack", "resources/pixel_pack.png");
 }
 Entity Game::CreateGridCell(int i, int j)
@@ -292,7 +293,7 @@ Entity Game::CreateChicken()
 		Components::RigidBody{
 			{ 0.0f, 0.0f, 0.0f },
 			{ 0.0f, 0.0f, 0.0f },
-			200.0f
+			100.0f
 		}
 	);
 
@@ -365,6 +366,150 @@ Entity Game::CreateChicken()
 					TextureManager::GetInstance()->Get("chicken_walk"),
 					96, 32,
 					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_walk"),
+					0, 0,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_walk"),
+					32, 0,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_walk"),
+					64, 0,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_walk"),
+					96, 0,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_walk"),
+					0, 64,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_walk"),
+					32, 64,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_walk"),
+					64, 64,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_walk"),
+					96, 64,
+					32, 32
+				},
+			Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					0, 96,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					32, 96,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					64, 96,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					96, 96,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					0, 32,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					32, 32,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					64, 32,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					96, 32,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					0, 0,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					32, 0,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					64, 0,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					96, 0,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					0, 64,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					32, 64,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					64, 64,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_eat"),
+					96, 64,
+					32, 32
 				}
 			}
 		}
@@ -385,34 +530,95 @@ Entity Game::CreateChicken()
 			{
 				{"idleRigit", {0}},
 				{"idleLeft", {4}},
+				{"idleUp", {8}},
+				{"idleDown", {12}},
 				{"moveRight", {0, 1, 2, 3}},
-				{"moveLeft", {4, 5, 6, 7}}
+				{"moveLeft", {4, 5, 6, 7}},
+				{"moveUp", {8, 9, 10, 11}},
+				{"moveDown", {12, 13, 14, 15}},
+				{"eatRight", {16, 17, 18, 19}},
+				{"eatLeft", {20, 21, 22, 23}},
+				{"eatUp", {24, 25, 26, 27}},
+				{"eatDown", {28, 29, 30, 31}}
 			},
 			0.2f,
 			[this](Entity entity) {
 				Components::SpriteAnimation& spriteAnimation = Registry::GetInstance()->GetComponent<Components::SpriteAnimation>(entity);
 				Components::RigidBody& rigidBody = Registry::GetInstance()->GetComponent<Components::RigidBody>(entity);
+				Components::AnimalStat& animalStat = mRegistry->GetComponent<Components::AnimalStat>(entity);
 				std::string previousState = spriteAnimation.state;
-				if (rigidBody.velocity.x > 0)
-				{
-					spriteAnimation.state = "moveRight";
-				}
-				else if (rigidBody.velocity.x < 0)
-				{
-					spriteAnimation.state = "moveLeft";
-				}
-				else if (rigidBody.velocity.x == 0)
+				float xDiff = abs(rigidBody.velocity.x);
+				float yDiff = abs(rigidBody.velocity.y);
+
+				if (rigidBody.velocity.x == 0 && rigidBody.velocity.y == 0)
 				{
 					if (spriteAnimation.state == "moveLeft")
 					{
-						spriteAnimation.state = "idleLeft";
+						if (animalStat.eating || animalStat.drinking)
+						{
+							spriteAnimation.state = "eatLeft";
+						}
+						else
+						{
+							spriteAnimation.state = "idleLeft";
+						}
 					}
-					else
+					else if (spriteAnimation.state == "moveRight")
 					{
-						spriteAnimation.state = "idleRight";
+						if (animalStat.eating || animalStat.drinking)
+						{
+							spriteAnimation.state = "eatRight";
+						}
+						else {
+							spriteAnimation.state = "idleRight";
+						}
+					}
+					else if (spriteAnimation.state == "moveUp")
+					{
+						if (animalStat.eating || animalStat.drinking)
+						{
+							spriteAnimation.state = "eatUp";
+						}
+						else {
+							spriteAnimation.state = "idleUp";
+						}
+					}
+					else if (spriteAnimation.state == "moveDown")
+					{
+						if (animalStat.eating || animalStat.drinking)
+						{
+							spriteAnimation.state = "eatDown";
+						}
+						else
+						{
+							spriteAnimation.state = "idleDown";
+						}
 					}
 				}
-				//spriteAnimation.state = currentState;
+				else {
+					if (xDiff >= yDiff)
+					{
+						if (rigidBody.velocity.x > 0)
+						{
+							spriteAnimation.state = "moveRight";
+						}
+						else if (rigidBody.velocity.x < 0)
+						{
+							spriteAnimation.state = "moveLeft";
+						}
+					}
+					else {
+						if (rigidBody.velocity.y > 0)
+						{
+							spriteAnimation.state = "moveDown";
+						}
+						else if (rigidBody.velocity.y < 0)
+						{
+							spriteAnimation.state = "moveUp";
+						}
+					}
+				}
+
 				if (spriteAnimation.state != previousState)
 				{
 					spriteAnimation.frame = 0;
@@ -513,6 +719,7 @@ void Game::PopulateObstacles(Entity entity)
 	for (int i = 0; i < mRows; i++) {
 		for (int j = 0; j < mCols; j++) {
 			Components::Node& aStarNode = mRegistry->GetComponent<Components::Node>(mGrid[i][j]);
+			Components::Tile& tile = mRegistry->GetComponent<Components::Tile>(mGrid[i][j]);
 			if (aStarNode.blocked)
 			{
 				Obstacle* obstacle = new Obstacle{ mGrid[i][j], 55 };

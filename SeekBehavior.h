@@ -24,7 +24,7 @@ namespace Systems {
 					const Components::Transform& targetPosition = Registry::GetInstance()->GetComponent<Components::Transform>(behavior.target[behavior.target.size() - 1]);
 
 					float dist = Math::Magnitude(targetPosition.position - transform.position);
-					if (dist > 60.0f)
+					if (dist > 40.0f)
 					{
 						Math::Vector3 desireVelocity = Math::Normalise(targetPosition.position - transform.position) * behavior.maxSpeed;
 						Math::Vector3 steeringForce = desireVelocity - rigidBody.velocity;
