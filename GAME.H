@@ -9,11 +9,22 @@
 #include "SpriteAnimation.h"
 #include "Decision.h"
 #include "Tile.h"
+#include "Node.h"
+#include "Seek.h"
+#include "State.h"
+#include "AnimalStat.h"
+#include "Avoid.h"
 
 #include "SpriteRenderer.h"
 #include "SpriteAnimator.h"
 #include "Physics.h"
 #include "Tilemap.h"
+#include "AStar.h"
+#include "SeekBehavior.h"
+#include "MakeDecision.h"
+#include "Animal.h"
+#include "AvoidBehavior.h"
+
 
 #include <vector>
 #include <sstream>
@@ -32,9 +43,11 @@ private:
 	void RegisterSystems();
 	void CreateTextureManager();
 	Entity CreateGridCell(int i, int j);
-	void CreateChicken();
+	Entity CreateChicken();
 	void LoadTileMap();
-	void CreateDecisionTree();
+	void PopulateObstacles(Entity entity);
+	Decision* CreateDecisionTree(Entity entity);
+	void ResetAstarGrid();
 private:
 	std::vector<std::vector<Entity>> mGrid;
 	unsigned int mRows;
@@ -43,9 +56,17 @@ private:
 	float mCellHeight;
 	float mDeltaTime;
 	Registry* mRegistry;
+	std::vector<Decision*> mDecisions;
+	std::vector<Entity> mChickens;
+	std::vector<std::vector<Obstacle*>> mObstacles;
 
 	Systems::SpriteRenderer* mSpriteRenderer;
 	Systems::Physics* mPhysics;
 	Systems::SpriteAnimator* mSpriteAnimator;
 	Systems::TileMap* mTileMap;
+	Systems::AStar* mAStar;
+	Systems::SeekBehavior* mSeekBehavior;
+	Systems::MakeDecision* mMakeDecision;
+	Systems::Animal* mAnimal;
+	Systems::AvoidBehavior* mAvoidBehavior;
 };

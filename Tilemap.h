@@ -10,11 +10,6 @@ namespace Systems {
 
 	class TileMap : public System
 	{
-		std::vector<std::string> tileNames{
-			"",
-			"floor_wood",
-			"wall"
-		};
 	public:
 		void Init()
 		{
@@ -24,9 +19,87 @@ namespace Systems {
 				Components::Sprites& sprites = Registry::GetInstance()->GetComponent<Components::Sprites>(entity);
 				Components::Sprite& sprite = sprites.elements[sprites.index];
 
-				std::stringstream ss;
-				ss << tileNames[int(tile.type)] << "_" << tile.mask.to_ulong();
-				sprite.texture = TextureManager::GetInstance()->Get(ss.str());
+				switch (tile.type)
+				{
+				case TILETYPE::EMPTY:
+				{
+					sprites.elements = {
+						Components::Sprite
+						{
+							TextureManager::GetInstance()->Get("pixel_pack"),
+							6 * 16, 2 * 16,
+							16, 16
+						}
+					};
+					break;
+				}
+				case TILETYPE::FLOOR:
+					break;
+				case TILETYPE::WALL:
+				{
+					std::stringstream ss;
+					ss << "wall_" << tile.mask.to_ulong();
+					sprite.texture = TextureManager::GetInstance()->Get(ss.str());
+					break;
+				}
+				case TILETYPE::WATER:
+				{
+					sprites.elements = {
+						Components::Sprite
+						{
+							TextureManager::GetInstance()->Get("pixel_pack"),
+							0, 128,
+							16, 16
+						},
+						Components::Sprite
+						{
+							TextureManager::GetInstance()->Get("pixel_pack"),
+							16, 128,
+							16, 16
+						},
+						Components::Sprite
+						{
+							TextureManager::GetInstance()->Get("pixel_pack"),
+							32, 128,
+							16, 16
+						},
+						Components::Sprite
+						{
+							TextureManager::GetInstance()->Get("pixel_pack"),
+							48, 128,
+							16, 16
+						}
+					};
+
+					Registry::GetInstance()->AddComponent(
+						entity,
+						Components::SpriteAnimation
+						{
+							{
+								{"idle", {0, 1, 2, 3}},
+							},
+							0.4f
+						}
+					);
+					break;
+				}
+				case TILETYPE::FOOD:
+				{
+					sprites.elements = {
+						Components::Sprite
+						{
+							TextureManager::GetInstance()->Get("pixel_pack"),
+							9 * 16, 2 * 16,
+							16, 16
+						}
+					};
+
+					break;
+				}
+				default:
+					break;
+				}
+
 			}
 		}
 	};

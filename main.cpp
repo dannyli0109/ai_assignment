@@ -8,8 +8,8 @@ int main(void)
 {
     {
         Game game;
-        int width = 1080;
-        int height = 1080;
+        int width = 1152;
+        int height = 1152;
 
         InitWindow(width, height, "Assignment");
 

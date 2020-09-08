@@ -1,7 +1,10 @@
 #include "Game.h"
-
+#include <iostream>
+#include <time.h>
+#include <stdlib.h>
 void Game::Init()
 {
+	srand(time(nullptr));
 	Registry::Create();
 	mRegistry = Registry::GetInstance();
 	RegisterComponents();
@@ -10,8 +13,8 @@ void Game::Init()
 	CreateTextureManager();
 	mRows = 18;
 	mCols = 18;
-	mCellWidth = 60;
-	mCellHeight = 60;
+	mCellWidth = 64;
+	mCellHeight = 64;
 	mGrid = std::vector<std::vector<Entity>>(mRows,	std::vector<Entity>(mCols, 0));
 
 	for (int i = 0; i < mRows; i++)
@@ -24,7 +27,17 @@ void Game::Init()
 
 	LoadTileMap();
 
-	CreateChicken();
+	for (int i = 0; i < 5; i++)
+	{
+		Entity chicken = CreateChicken();
+		mChickens.push_back(chicken);
+	}
+
+	for (Entity chicken : mChickens)
+	{
+		PopulateObstacles(chicken);
+		mDecisions.push_back(CreateDecisionTree(chicken));
+	}
 
 	mTileMap->Init();
 
@@ -34,22 +47,42 @@ void Game::Init()
 void Game::Update()
 {
 	mDeltaTime = GetFrameTime();
+	mAnimal->Update(mDeltaTime);
+	mMakeDecision->Update(mDeltaTime);
+	mSeekBehavior->Update(mDeltaTime);
+	mAvoidBehavior->Update(mDeltaTime);
 	mPhysics->Update(mDeltaTime);
 	mSpriteAnimator->Update(mDeltaTime);
-	//mTileMap->Update(mDeltaTime);
 }
 
 void Game::Draw()
 {
 	mSpriteRenderer->Draw();
+	//mAStar->Debug();
+	mAnimal->Debug();
+	mSeekBehavior->Debug();
+	mAvoidBehavior->Debug();
 }
 
 void Game::Shutdown()
 {
+
+	for (Decision* d : mDecisions)
+	{
+		d->DeleteChildren();
+	}
+
+	for (std::vector<Obstacle*> obstacles : mObstacles)
+	{
+		for (Obstacle* obstacle : obstacles)
+		{
+			delete obstacle;
+		}
+	}
+	//mDecisionRoot->DeleteChildren();
 	Registry::Destroy();
 	TextureManager::Destroy();
 }
-
 void Game::RegisterComponents()
 {
 	mRegistry->RegisterComponent<Components::Rect>();
@@ -57,8 +90,13 @@ void Game::RegisterComponents()
 	mRegistry->RegisterComponent<Components::Sprites>();
 	mRegistry->RegisterComponent<Components::RigidBody>();
 	mRegistry->RegisterComponent<Components::SpriteAnimation>();
-	mRegistry->RegisterComponent<Components::Decision>();
+	mRegistry->RegisterComponent<Components::DecisionTree>();
 	mRegistry->RegisterComponent<Components::Tile>();
+	mRegistry->RegisterComponent<Components::Node>();
+	mRegistry->RegisterComponent<Components::Seek>();
+	mRegistry->RegisterComponent<Components::State>();
+	mRegistry->RegisterComponent<Components::AnimalStat>();
+	mRegistry->RegisterComponent<Components::Avoid>();
 }
 void Game::RegisterSystems()
 {
@@ -76,17 +114,45 @@ void Game::RegisterSystems()
 	});
 
 	mSpriteAnimator = mRegistry->RegisterSystem<Systems::SpriteAnimator>();
-
 	mRegistry->SetSystemSignatureV<Systems::SpriteAnimator>({
 		mRegistry->GetComponentType<Components::Sprites>(),
 		mRegistry->GetComponentType<Components::SpriteAnimation>()
 	});
 
 	mTileMap = mRegistry->RegisterSystem<Systems::TileMap>();
-
 	mRegistry->SetSystemSignatureV<Systems::TileMap>({
 		mRegistry->GetComponentType<Components::Sprites>(),
 		mRegistry->GetComponentType<Components::Tile>()
+	});
+
+	mAStar = mRegistry->RegisterSystem<Systems::AStar>();
+	mRegistry->SetSystemSignatureV<Systems::AStar>({
+		mRegistry->GetComponentType<Components::Transform>(),
+		mRegistry->GetComponentType<Components::Node>()
+	});
+
+	mSeekBehavior = mRegistry->RegisterSystem<Systems::SeekBehavior>();
+	mRegistry->SetSystemSignatureV<Systems::SeekBehavior>({
+		mRegistry->GetComponentType<Components::Seek>(),
+		mRegistry->GetComponentType<Components::RigidBody>(),
+		mRegistry->GetComponentType<Components::Transform>()
+	});
+
+	mAvoidBehavior = mRegistry->RegisterSystem<Systems::AvoidBehavior>();
+	mRegistry->SetSystemSignatureV<Systems::AvoidBehavior>({
+		mRegistry->GetComponentType<Components::Avoid>(),
+		mRegistry->GetComponentType<Components::RigidBody>(),
+		mRegistry->GetComponentType<Components::Transform>()
+	});
+
+	mMakeDecision = mRegistry->RegisterSystem<Systems::MakeDecision>();
+	mRegistry->SetSystemSignatureV<Systems::MakeDecision>({
+		mRegistry->GetComponentType<Components::DecisionTree>()
+	});
+
+	mAnimal = mRegistry->RegisterSystem<Systems::Animal>();
+	mRegistry->SetSystemSignatureV<Systems::Animal>({
+		mRegistry->GetComponentType<Components::AnimalStat>()
 	});
 }
 void Game::CreateTextureManager()
@@ -128,6 +194,7 @@ void Game::CreateTextureManager()
 	}
 
 	tm->LoadTexture("chicken_walk", "resources/chicken_walk.png");
+	tm->LoadTexture("pixel_pack", "resources/pixel_pack.png");
 }
 Entity Game::CreateGridCell(int i, int j)
 {
@@ -180,22 +247,72 @@ Entity Game::CreateGridCell(int i, int j)
 			i, j, TILETYPE::EMPTY, 8, 0
 		}
 	);
+
+	mRegistry->AddComponent(
+		entity,
+		Components::Node {}
+	);
 	return entity;
 }
-void Game::CreateChicken()
+Entity Game::CreateChicken()
 {
 	Entity entity = mRegistry->CreateEntity();
+
+	std::vector<Entity> canadates;
+
+	for (int i = 0; i < mRows; i++)
+	{
+		for (int j = 0; j < mCols; j++)
+		{
+			Entity cell = mGrid[i][j];
+			Components::Tile& tile = mRegistry->GetComponent<Components::Tile>(cell);
+			Components::Node& node = mRegistry->GetComponent<Components::Node>(cell);
+			if (tile.type == TILETYPE::EMPTY)
+			{
+				canadates.push_back(cell);
+			}
+		}
+	}
+
+	int randIndex = rand() % canadates.size();
+	Entity canadate = canadates[randIndex];
+	Math::Vector3 pos = mRegistry->GetComponent<Components::Transform>(canadate).position;
 
 	mRegistry->AddComponent(
 		entity,
 		Components::Transform{
-			Math::Vector3(
-				200.0f, 200.0f, 1.0f
-			),
+			pos,
 			0,
 			1.0f
 		}
 	);
+
+	mRegistry->AddComponent(
+		entity,
+		Components::RigidBody{
+			{ 0.0f, 0.0f, 0.0f },
+			{ 0.0f, 0.0f, 0.0f },
+			200.0f
+		}
+	);
+
+	mRegistry->AddComponent(
+		entity,
+		Components::Seek{
+			{},
+			200.0f
+		}
+	);
+
+	mRegistry->AddComponent(
+		entity,
+		Components::Avoid {
+			{},
+			1000.0f,
+			60
+		}
+	);
+
 	mRegistry->AddComponent(
 		entity,
 		Components::Sprites
@@ -224,6 +341,30 @@ void Game::CreateChicken()
 					TextureManager::GetInstance()->Get("chicken_walk"),
 					96, 96,
 					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_walk"),
+					0, 32,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_walk"),
+					32, 32,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_walk"),
+					64, 32,
+					32, 32
+				},
+				Components::Sprite
+				{
+					TextureManager::GetInstance()->Get("chicken_walk"),
+					96, 32,
+					32, 32
 				}
 			}
 		}
@@ -242,12 +383,63 @@ void Game::CreateChicken()
 		Components::SpriteAnimation
 		{
 			{
-				{"idle", {0}},
-				{"moveRight", {0, 1, 2, 3}}
+				{"idleRigit", {0}},
+				{"idleLeft", {4}},
+				{"moveRight", {0, 1, 2, 3}},
+				{"moveLeft", {4, 5, 6, 7}}
 			},
-			0.2f
+			0.2f,
+			[this](Entity entity) {
+				Components::SpriteAnimation& spriteAnimation = Registry::GetInstance()->GetComponent<Components::SpriteAnimation>(entity);
+				Components::RigidBody& rigidBody = Registry::GetInstance()->GetComponent<Components::RigidBody>(entity);
+				std::string previousState = spriteAnimation.state;
+				if (rigidBody.velocity.x > 0)
+				{
+					spriteAnimation.state = "moveRight";
+				}
+				else if (rigidBody.velocity.x < 0)
+				{
+					spriteAnimation.state = "moveLeft";
+				}
+				else if (rigidBody.velocity.x == 0)
+				{
+					if (spriteAnimation.state == "moveLeft")
+					{
+						spriteAnimation.state = "idleLeft";
+					}
+					else
+					{
+						spriteAnimation.state = "idleRight";
+					}
+				}
+				//spriteAnimation.state = currentState;
+				if (spriteAnimation.state != previousState)
+				{
+					spriteAnimation.frame = 0;
+					spriteAnimation.time = 0.0f;
+				}
+			},
+			"idleRigit"
 		}
 	);
+
+	mRegistry->AddComponent(
+		entity,
+		Components::State {}
+	);
+
+	mRegistry->AddComponent(
+		entity,
+		Components::AnimalStat
+		{
+			100.0f,
+			100.0f,
+			3.0f,
+			12.0f
+		}
+	);
+
+	return entity;
 }
 void Game::LoadTileMap()
 {
@@ -264,9 +456,14 @@ void Game::LoadTileMap()
 			for (int i = 0; i < rows; i++) {
 				for (int j = 0; j < cols; j++) {
 					Components::Tile& tile = mRegistry->GetComponent<Components::Tile>(mGrid[i][j]);
+					Components::Node& aStarNode = mRegistry->GetComponent<Components::Node>(mGrid[i][j]);
 					int type;
 					file.read((char*)&type, sizeof(type));
 					tile.type = TILETYPE(type);
+					if (tile.type == TILETYPE::WALL)
+					{
+						aStarNode.blocked = true;
+					}
 				}
 			}
 		}
@@ -283,6 +480,8 @@ void Game::LoadTileMap()
 		{
 			Entity entity = mGrid[i][j];
 			Components::Tile& tile = mRegistry->GetComponent<Components::Tile>(entity);
+			Components::Node& aStarNode = mRegistry->GetComponent<Components::Node>(entity);
+
 			for (int k = 0; k < tile.sides; k++)
 			{
 				unsigned int newI = i + dirY[k];
@@ -290,6 +489,12 @@ void Game::LoadTileMap()
 				if (newI < 0 || newI > mRows - 1 || newJ < 0 || newJ > mCols - 1) continue;
 				Entity other = mGrid[newI][newJ];
 				Components::Tile& otherTile = mRegistry->GetComponent<Components::Tile>(other);
+				Components::Node& otherAStarNode = mRegistry->GetComponent<Components::Node>(other);
+
+				if (!aStarNode.blocked && !otherAStarNode.blocked) {
+					aStarNode.edges.push_back(other);
+				}
+
 				if (tile.type == otherTile.type)
 				{
 					tile.mask.set(k, 0);
@@ -301,19 +506,372 @@ void Game::LoadTileMap()
 		}
 	}
 }
-void Game::CreateDecisionTree()
+void Game::PopulateObstacles(Entity entity)
 {
-	Entity entity = mRegistry->CreateEntity();
+	Components::Avoid& avoid = mRegistry->GetComponent<Components::Avoid>(entity);
+	std::vector<Obstacle*> obstacles;
+	for (int i = 0; i < mRows; i++) {
+		for (int j = 0; j < mCols; j++) {
+			Components::Node& aStarNode = mRegistry->GetComponent<Components::Node>(mGrid[i][j]);
+			if (aStarNode.blocked)
+			{
+				Obstacle* obstacle = new Obstacle{ mGrid[i][j], 55 };
+				avoid.obstacles.push_back(obstacle);
+				obstacles.push_back(obstacle);
+			}
+		}
+	}
 
-	Components::Decision* movingToTargetDecision = new Components::Decision{
-		
+	/*for (int i = 0; i < mChickens.size(); i++)
+	{
+		if (mChickens[i] != entity)
+		{
+			Obstacle* obstacle = new Obstacle{ mChickens[i], 30 };
+			avoid.obstacles.push_back(obstacle);
+			obstacles.push_back(obstacle);
+		}
+	}*/
+	mObstacles.push_back(obstacles);
+}
+
+Decision* Game::CreateDecisionTree(Entity entity)
+{
+	//Components::AnimalStat& animalStat = mRegistry->GetComponent<Components::AnimalStat>(entity);
+	//Components::State& state = mRegistry->GetComponent<Components::State>(entity);
+	//Components::Seek& seek = mRegistry->GetComponent<Components::Seek>(entity);
+	//Components::Transform& transform = mRegistry->GetComponent<Components::Transform>(entity);
+
+
+	Decision* wander = new Decision
+	{
+		[this](Entity entity) {
+			Components::Seek& seek = mRegistry->GetComponent<Components::Seek>(entity);
+			Components::Transform& transform = mRegistry->GetComponent<Components::Transform>(entity);
+
+			if (seek.target.size() == 0) {
+				int nearestRow = transform.position.y / mCellHeight;
+				int nearestCol = transform.position.x / mCellWidth;
+				std::vector<Entity> canadates;
+				for (int i = 0; i < mRows; i++)
+				{
+					for (int j = 0; j < mCols; j++)
+					{
+						Entity cell = mGrid[i][j];
+						Components::Tile& tile = mRegistry->GetComponent<Components::Tile>(cell);
+						Components::Node& node = mRegistry->GetComponent<Components::Node>(cell);
+						if (tile.type == TILETYPE::EMPTY)
+						{
+							canadates.push_back(cell);
+						}
+					}
+				}
+
+				int randIndex = rand() % canadates.size();
+				ResetAstarGrid();
+				std::vector<Entity> path = mAStar->Search(mGrid[nearestRow][nearestCol], canadates[randIndex]);
+				seek.target = path;
+			}
+		}
+	};
+
+	Decision* findFood = new Decision
+	{
+		[this](Entity entity) {
+			Components::Seek& seek = mRegistry->GetComponent<Components::Seek>(entity);
+			Components::Transform& transform = mRegistry->GetComponent<Components::Transform>(entity);
+
+			if (seek.target.size() == 0) {
+				int nearestRow = transform.position.y / mCellHeight;
+				int nearestCol = transform.position.x / mCellWidth;
+				std::vector<Entity> canadates;
+				for (int i = 0; i < mRows; i++)
+				{
+					for (int j = 0; j < mCols; j++)
+					{
+						Entity cell = mGrid[i][j];
+						Components::Tile& tile = mRegistry->GetComponent<Components::Tile>(cell);
+						Components::Transform& cellTransform = mRegistry->GetComponent<Components::Transform>(cell);
+						if (tile.type == TILETYPE::FOOD)
+						{
+							canadates.push_back(cell);
+						}
+					}
+				}
+
+				unsigned int minSteps = UINT16_MAX;
+				std::vector<Entity> shortestPath;
+
+				for (Entity canadate : canadates)
+				{
+					ResetAstarGrid();
+					std::vector<Entity> path = mAStar->Search(mGrid[nearestRow][nearestCol], canadate);
+					if (path.size() < minSteps)
+					{
+						minSteps = path.size();
+						shortestPath = path;
+					}
+				}
+				seek.target = shortestPath;
+			}
+		}
+	};
+
+	Decision* foodNotInRange = new Decision
+	{
+		[this](Entity entity)
+		{
+			Components::DecisionTree& r = mRegistry->GetComponent<Components::DecisionTree>(entity);
+			Decision* current = r.root->mFalseBranch->mFalseBranch->mFalseBranch;
+			if (current->mCondition(entity))
+			{
+				current->mTrueBranch->mDecision(entity);
+			}
+			else
+			{
+				current->mFalseBranch->mDecision(entity);
+			}
+		},
+		[this](Entity entity)
+		{
+			Components::AnimalStat& animalStat = mRegistry->GetComponent<Components::AnimalStat>(entity);
+			Components::Transform& transform = mRegistry->GetComponent<Components::Transform>(entity);
+			float minDist = FLT_MAX;
+			for (int i = 0; i < mRows; i++)
+			{
+				for (int j = 0; j < mCols; j++)
+				{
+					Entity cell = mGrid[i][j];
+					Components::Tile& tile = mRegistry->GetComponent<Components::Tile>(cell);
+					Components::Transform& cellTransform = mRegistry->GetComponent<Components::Transform>(cell);
+					if (tile.type == TILETYPE::FOOD)
+					{
+						float dist = Math::Magnitude(transform.position - cellTransform.position);
+						if (dist < minDist)
+						{
+							minDist = dist;
+						}
+					}
+				}
+			}
+			return animalStat.hunger < 70 && minDist > 60.0f;
+		},
+		findFood,
+		wander
+	};
+
+	Decision* eatFood = new Decision
+	{
+		[this](Entity entity)
+		{
+			Components::AnimalStat& animalStat = mRegistry->GetComponent<Components::AnimalStat>(entity);
+			animalStat.eating = true;
+		}
+	};
+
+	Decision* foodInRange = new Decision
+	{
+		[this](Entity entity)
+		{
+			Components::AnimalStat& animalStat = mRegistry->GetComponent<Components::AnimalStat>(entity);
+
+			Components::DecisionTree& r = mRegistry->GetComponent<Components::DecisionTree>(entity);
+			Decision* current = r.root->mFalseBranch->mFalseBranch;
+			if (current->mCondition(entity))
+			{
+				current->mTrueBranch->mDecision(entity);
+			}
+			else
+			{
+				animalStat.eating = false;
+				current->mFalseBranch->mDecision(entity);
+			}
+		},
+		[this](Entity entity)
+		{
+			Components::AnimalStat& animalStat = mRegistry->GetComponent<Components::AnimalStat>(entity);
+			Components::Transform& transform = mRegistry->GetComponent<Components::Transform>(entity);
+
+			float minDist = FLT_MAX;
+			for (int i = 0; i < mRows; i++)
+			{
+				for (int j = 0; j < mCols; j++)
+				{
+					Entity cell = mGrid[i][j];
+					Components::Tile& tile = mRegistry->GetComponent<Components::Tile>(cell);
+					Components::Transform& cellTransform = mRegistry->GetComponent<Components::Transform>(cell);
+					if (tile.type == TILETYPE::FOOD)
+					{
+						float dist = Math::Magnitude(transform.position - cellTransform.position);
+						if (dist < minDist)
+						{
+							minDist = dist;
+						}
+					}
+				}
+			}
+			return (animalStat.eating && animalStat.hunger < 100.0f) || (animalStat.hunger < 70 && minDist <= 60.0f);
+		},
+		eatFood,
+		foodNotInRange
+	};
+
+	Decision* findWater = new Decision
+	{
+		[this](Entity entity) {
+			Components::Seek& seek = mRegistry->GetComponent<Components::Seek>(entity);
+			Components::Transform& transform = mRegistry->GetComponent<Components::Transform>(entity);
+			if (seek.target.size() == 0) {
+				int nearestRow = transform.position.y / mCellHeight;
+				int nearestCol = transform.position.x / mCellWidth;
+				std::vector<Entity> canadates;
+				for (int i = 0; i < mRows; i++)
+				{
+					for (int j = 0; j < mCols; j++)
+					{
+						Entity cell = mGrid[i][j];
+						Components::Tile& tile = mRegistry->GetComponent<Components::Tile>(cell);
+						Components::Transform& cellTransform = mRegistry->GetComponent<Components::Transform>(cell);
+						if (tile.type == TILETYPE::WATER)
+						{
+							canadates.push_back(cell);
+						}
+					}
+				}
+
+				unsigned int minSteps = UINT16_MAX;
+				std::vector<Entity> shortestPath;
+
+				for (Entity canadate : canadates)
+				{
+					ResetAstarGrid();
+					std::vector<Entity> path = mAStar->Search(mGrid[nearestRow][nearestCol], canadate);
+					if (path.size() < minSteps)
+					{
+						minSteps = path.size();
+						shortestPath = path;
+					}
+				}
+				seek.target = shortestPath;
+			}
+		}
+	};
+
+	Decision* waterNotInRange = new Decision
+	{
+		[this](Entity entity)
+		{
+			Components::DecisionTree& r = mRegistry->GetComponent<Components::DecisionTree>(entity);
+			Decision* current = r.root->mFalseBranch;
+			if (current->mCondition(entity))
+			{
+				current->mTrueBranch->mDecision(entity);
+			}
+			else
+			{
+				current->mFalseBranch->mDecision(entity);
+			}
+		},
+		[this](Entity entity)
+		{
+			Components::AnimalStat& animalStat = mRegistry->GetComponent<Components::AnimalStat>(entity);
+			Components::Transform& transform = mRegistry->GetComponent<Components::Transform>(entity);
+			float minDist = FLT_MAX;
+			for (int i = 0; i < mRows; i++)
+			{
+				for (int j = 0; j < mCols; j++)
+				{
+					Entity cell = mGrid[i][j];
+					Components::Tile& tile = mRegistry->GetComponent<Components::Tile>(cell);
+					Components::Transform& cellTransform = mRegistry->GetComponent<Components::Transform>(cell);
+					if (tile.type == TILETYPE::WATER)
+					{
+						float dist = Math::Magnitude(transform.position - cellTransform.position);
+						if (dist < minDist)
+						{
+							minDist = dist;
+						}
+					}
+				}
+			}
+			return animalStat.thirst < 70 && minDist > 60.0f && animalStat.thirst <= animalStat.hunger;
+		},
+		findWater,
+		foodInRange
+	};
+
+
+	Decision* drinkWater = new Decision
+	{
+		[this](Entity entity)
+		{
+			Components::AnimalStat& animalStat = mRegistry->GetComponent<Components::AnimalStat>(entity);
+			animalStat.drinking = true;
+		}
+	};
+
+	Decision* root = new Decision 
+	{
+		[this](Entity entity) {
+			Components::AnimalStat& animalStat = mRegistry->GetComponent<Components::AnimalStat>(entity);
+			Components::DecisionTree& r = mRegistry->GetComponent<Components::DecisionTree>(entity);
+			if (r.root->mCondition(entity))
+			{
+				r.root->mTrueBranch->mDecision(entity);
+			}
+			else
+			{
+				animalStat.drinking = false;
+				r.root->mFalseBranch->mDecision(entity);
+			}
+		},
+		[this](Entity entity) {
+			Components::AnimalStat& animalStat = mRegistry->GetComponent<Components::AnimalStat>(entity);
+			Components::Transform& transform = mRegistry->GetComponent<Components::Transform>(entity);
+
+			float minDist = FLT_MAX;
+			for (int i = 0; i < mRows; i++)
+			{
+				for (int j = 0; j < mCols; j++)
+				{
+					Entity cell = mGrid[i][j];
+					Components::Tile& tile = mRegistry->GetComponent<Components::Tile>(cell);
+					Components::Transform& cellTransform = mRegistry->GetComponent<Components::Transform>(cell);
+					if (tile.type == TILETYPE::WATER)
+					{
+						float dist = Math::Magnitude(transform.position - cellTransform.position);
+						if (dist < minDist)
+						{
+							minDist = dist;
+						}
+					}
+				}
+			}
+			return (animalStat.drinking && animalStat.thirst < 100.0f) || (animalStat.thirst < 70 && minDist <= 60.0f && animalStat.thirst <= animalStat.hunger);
+		},
+		drinkWater,
+		waterNotInRange
 	};
 
 	mRegistry->AddComponent(
 		entity,
-		Components::Decision 
+		Components::DecisionTree
 		{
-			
+			root
 		}
 	);
+	return root;
 }
+
+void Game::ResetAstarGrid()
+{
+	for (int i = 0; i < mRows; i++)
+	{
+		for (int j = 0; j < mCols; j++)
+		{
+			Entity cell = mGrid[i][j];
+			Components::Node& node = mRegistry->GetComponent<Components::Node>(cell);
+			node.previous = -1;
+		}
+	}
+}
+

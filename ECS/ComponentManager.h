@@ -12,7 +12,7 @@ public:
 	{
 		const char* typeName = typeid(T).name();
 
-		//assert(mComponentTypes.find(typeName) == mComponentTypes.end() && "Registering component type more than once.");
+		assert(mComponentTypes.find(typeName) == mComponentTypes.end() && "Registering component type more than once.");
 
 		mComponentTypes.insert({ typeName, mNextComponentType });
 		mComponentArrays.insert({ typeName, new ComponentArray<T>() });

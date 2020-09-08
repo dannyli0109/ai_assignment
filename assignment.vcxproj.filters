@@ -55,9 +55,6 @@
     <ClInclude Include="Physics.h">
       <Filter>Systems</Filter>
     </ClInclude>
-    <ClInclude Include="AStarNode.h">
-      <Filter>Components</Filter>
-    </ClInclude>
     <ClInclude Include="AStar.h">
       <Filter>Systems</Filter>
     </ClInclude>
@@ -73,13 +70,34 @@
     <ClInclude Include="State.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="Agent.h">
-      <Filter>Components</Filter>
-    </ClInclude>
     <ClInclude Include="Tile.h">
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="Tilemap.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Seek.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="SeekBehavior.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="MakeDecision.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Node.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="AnimalStat.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="Animal.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Avoid.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="AvoidBehavior.h">
       <Filter>Systems</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,22 +1,26 @@
 #pragma once
 #include <vector>
-namespace Components
+
+
+struct Node
 {
-	struct AStarNode
-	{
-		std::vector<AStarNode*> edges;
-		AStarNode* previous;
-		bool blocked = false;
-		float g;
-		float h;
-		float GetF() const { return g + h; };
-	};
-}
+	std::vector<Node*> edges;
+	Node* previous = nullptr;
+	bool blocked = false;
+	float g;
+	float h;
+	float GetF() const { return g + h; };
+};
 
 struct GreaterThanByFScore
 {
-	bool operator()(Components::AStarNode* a, Components::AStarNode* b) const
+	bool operator()(Node* a, Node* b) const
 	{
 		return a->GetF() > b->GetF();
 	}
 };
+
+namespace Components
+{
+	
+}

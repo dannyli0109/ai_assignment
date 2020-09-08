@@ -156,19 +156,25 @@
     <ClCompile Include="TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Agent.h" />
+    <ClInclude Include="Animal.h" />
     <ClInclude Include="AStar.h" />
+    <ClInclude Include="Avoid.h" />
+    <ClInclude Include="AvoidBehavior.h" />
     <ClInclude Include="Decision.h" />
     <ClInclude Include="Game.h" />
-    <ClInclude Include="AStarNode.h" />
+    <ClInclude Include="Node.h" />
+    <ClInclude Include="MakeDecision.h" />
     <ClInclude Include="Physics.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="RigidBody.h" />
+    <ClInclude Include="Seek.h" />
+    <ClInclude Include="SeekBehavior.h" />
     <ClInclude Include="Sprite.h" />
     <ClInclude Include="SpriteAnimation.h" />
     <ClInclude Include="SpriteAnimator.h" />
     <ClInclude Include="SpriteRenderer.h" />
     <ClInclude Include="State.h" />
+    <ClInclude Include="AnimalStat.h" />
     <ClInclude Include="TextureManager.h" />
     <ClInclude Include="Tile.h" />
     <ClInclude Include="Tilemap.h" />

@@ -1,10 +1,13 @@
 #pragma once
 #include <bitset>
 
-enum class TILETYPE {
+enum class TILETYPE 
+{
 	EMPTY = 0,
 	FLOOR,
-	WALL
+	WALL,
+	WATER,
+	FOOD
 };
 
 namespace Components

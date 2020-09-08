@@ -6,6 +6,6 @@ namespace Components
 {
 	struct State
 	{
-		std::unordered_map<const char*, std::function<bool(void)>> map;
+		std::string current = "idle";
 	};
 }

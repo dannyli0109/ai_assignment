@@ -13,6 +13,9 @@ namespace Systems {
 			{
 				Components::Sprites& sprites = Registry::GetInstance()->GetComponent<Components::Sprites>(entity);
 				Components::SpriteAnimation& spriteAnimation = Registry::GetInstance()->GetComponent<Components::SpriteAnimation>(entity);
+				Components::RigidBody& rigidBody = Registry::GetInstance()->GetComponent<Components::RigidBody>(entity);
+
+				spriteAnimation.transitions(entity);
 
 				spriteAnimation.time += deltaTime;
 
@@ -20,9 +23,11 @@ namespace Systems {
 				{
 					spriteAnimation.time -= spriteAnimation.speed;
 					std::vector<int> currentAnimation = spriteAnimation.frames[spriteAnimation.state];
-					spriteAnimation.frame = (spriteAnimation.frame + 1) % currentAnimation.size();
-					int nextIndex = currentAnimation[spriteAnimation.frame];
-					sprites.index = nextIndex;
+					if (currentAnimation.size() > 0) {
+						spriteAnimation.frame = (spriteAnimation.frame + 1) % currentAnimation.size();
+						int nextIndex = currentAnimation[spriteAnimation.frame];
+						sprites.index = nextIndex;
+					}
 				}
 			}
 		}

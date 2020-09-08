@@ -15,6 +15,11 @@ namespace Systems {
 				Components::RigidBody& rigidBody = Registry::GetInstance()->GetComponent<Components::RigidBody>(entity);
 
 				rigidBody.velocity += rigidBody.accerleration * deltaTime;
+				if (Math::Magnitude(rigidBody.velocity) > rigidBody.maxSpeed)
+				{
+					rigidBody.velocity = Math::Normalise(rigidBody.velocity) * rigidBody.maxSpeed;
+				}
+				//rigidBody.velocity = Math::Normalise(rigidBody.velocity) * rigidBody.maxSpeed;
 				transform.position += rigidBody.velocity * deltaTime;
 				rigidBody.accerleration *= 0;
 			}
