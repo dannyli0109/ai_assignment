@@ -9,6 +9,7 @@ namespace Systems {
 	public:
 		void Update(float deltaTime)
 		{
+			// animate the list of sprites for the current animation state
 			for (Entity entity : mEntities)
 			{
 				Components::Sprites& sprites = Registry::GetInstance()->GetComponent<Components::Sprites>(entity);

@@ -11,6 +11,7 @@ namespace Components
 		float y;
 		float width;
 		float height;
+		Color color = WHITE;
 	};
 
 	struct Sprites

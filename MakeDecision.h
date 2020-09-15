@@ -6,19 +6,20 @@
 namespace Systems {
 	class MakeDecision : public System {
 	public:
+		// update decision
 		void Update(float deltaTime) override
 		{
 			for (Entity entity : mEntities)
 			{
 				Components::DecisionTree& decisionTree = Registry::GetInstance()->GetComponent<Components::DecisionTree>(entity);
 				
-			/*	decisionTree.time += deltaTime;
+				decisionTree.time += deltaTime;
 
 				if (decisionTree.time >= decisionTree.interval)
 				{
-					decisionTree.time -= decisionTree.interval;*/
-					decisionTree.root->mDecision(entity);
-				//}
+					decisionTree.time -= decisionTree.interval;
+					decisionTree.root->mDecision();
+				}
 			}
 		}
 	};

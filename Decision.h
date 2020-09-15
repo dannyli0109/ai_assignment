@@ -1,11 +1,11 @@
 #pragma once
 #include <functional>
-
+#include "Registry.h"
 
 struct Decision
 {
-	std::function<void(Entity)> mDecision = [](Entity entity) {};
-	std::function<bool(Entity)> mCondition = [](Entity entity) { return true; };
+	std::function<void()> mDecision = []() {};
+	std::function<bool()> mCondition = []() { return true; };
 	Decision* mTrueBranch = nullptr;
 	Decision* mFalseBranch = nullptr;
 
@@ -22,10 +22,6 @@ struct Decision
 		}
 		delete this;
 	}
-	//~Decision()
-	//{
-	//	DeleteChildren();
-	//}
 };
 
 namespace Components

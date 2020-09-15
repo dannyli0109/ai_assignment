@@ -11,7 +11,6 @@
 #include "Tile.h"
 #include "Node.h"
 #include "Seek.h"
-#include "State.h"
 #include "AnimalStat.h"
 #include "Avoid.h"
 
@@ -25,6 +24,8 @@
 #include "Animal.h"
 #include "AvoidBehavior.h"
 
+#include "Chicken.h"
+#include "Llama.h"
 
 #include <vector>
 #include <sstream>
@@ -39,15 +40,16 @@ public:
 	void Draw();
 	void Shutdown();
 private:
+	// register components
 	void RegisterComponents();
+	// register systems and define components for each systems
 	void RegisterSystems();
+	// create singleton for texture manager
 	void CreateTextureManager();
+	// create the graph for the grid
 	Entity CreateGridCell(int i, int j);
-	Entity CreateChicken();
+	// load the tilemap from data file
 	void LoadTileMap();
-	void PopulateObstacles(Entity entity);
-	Decision* CreateDecisionTree(Entity entity);
-	void ResetAstarGrid();
 private:
 	std::vector<std::vector<Entity>> mGrid;
 	unsigned int mRows;
@@ -57,8 +59,9 @@ private:
 	float mDeltaTime;
 	Registry* mRegistry;
 	std::vector<Decision*> mDecisions;
-	std::vector<Entity> mChickens;
-	std::vector<std::vector<Obstacle*>> mObstacles;
+	std::vector<Mammal*> mMammal;
+	std::vector<Entity> mPreys;
+	std::vector<Entity> mEnemies;
 
 	Systems::SpriteRenderer* mSpriteRenderer;
 	Systems::Physics* mPhysics;

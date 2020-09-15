@@ -9,6 +9,7 @@
 namespace Systems {
 	class SpriteRenderer : public System {
 	public:
+		// render the sprite using position and rect
 		void Draw() override
 		{
 			for (Entity entity : mEntities)
@@ -24,7 +25,7 @@ namespace Systems {
 						Rectangle sourceRec{ sprite.x, sprite.y, sprite.width, sprite.height };
 						Rectangle destRec{ transform.position.x, transform.position.y, rect.width, rect.height };
 						Vector2 origin{ rect.offX, rect.offY };
-						DrawTexturePro(*sprite.texture, sourceRec, destRec, origin, transform.rotation, WHITE);
+						DrawTexturePro(*sprite.texture, sourceRec, destRec, origin, transform.rotation, sprite.color);
 					}
 				}
 			}

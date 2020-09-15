@@ -51,15 +51,21 @@ namespace Systems {
 				Components::Transform& transform = Registry::GetInstance()->GetComponent<Components::Transform>(entity);
 				Components::Rect& rect = Registry::GetInstance()->GetComponent<Components::Rect>(entity);
 				Components::AnimalStat& animalStat = Registry::GetInstance()->GetComponent<Components::AnimalStat>(entity);
-				std::stringstream thristStr;
-				thristStr << "Thirst: " << int(animalStat.thirst);
-				std::stringstream hungerStr;
+				//std::stringstream thristStr;
+				//thristStr << "Thirst: " << int(animalStat.thirst);
+			/*	std::stringstream hungerStr;
 				hungerStr << "Hunger: " << int(animalStat.hunger);
 
-				DrawText(thristStr.str().c_str(), transform.position.x - rect.offX, transform.position.y - rect.offY - 24, 24, WHITE);
+				DrawText(thristStr.str().c_str(), transform.position.x - rect.offX, transform.position.y - rect.offY - 24, 24, WHITE);*/
+				
 
-				DrawText(hungerStr.str().c_str(), transform.position.x - rect.offX, transform.position.y - rect.offY, 24, WHITE);
+
+				DrawText(animalStat.decision.c_str(), transform.position.x - rect.offX, transform.position.y - 50, 24, WHITE);
 			}
 		}
 	};
 }
+
+class Animal
+{
+};

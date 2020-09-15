@@ -10,6 +10,7 @@
 namespace Systems {
 	class SeekBehavior : public System {
 	public:
+		// seek the list of positions
 		void Update(float deltaTime) override
 		{
 			for (Entity entity : mEntities)
@@ -20,7 +21,6 @@ namespace Systems {
 
 				while (behavior.target.size() > 0)
 				{
-					//std::cout << behavior.target.size() << std::endl;
 					const Components::Transform& targetPosition = Registry::GetInstance()->GetComponent<Components::Transform>(behavior.target[behavior.target.size() - 1]);
 
 					float dist = Math::Magnitude(targetPosition.position - transform.position);

@@ -12,16 +12,6 @@
 namespace Systems {
 	class AStar : public System {
 	public:
-		void Update(float deltaTime) override
-		{
-			//for (Entity entity : mEntities)
-			//{
-			//	Components::Transform& transform = Registry::GetInstance()->GetComponent<Components::Transform>(entity);
-			//	Components::RigidBody& rigidBody = Registry::GetInstance()->GetComponent<Components::RigidBody>(entity);
-			//	Components::AStarNode& aStarNode = Registry::GetInstance()->GetComponent<Components::AStarNode>(entity);
-			//	
-			//}
-		}
 
 		std::vector<Entity> Search(Entity start, Entity end)
 		{
@@ -94,6 +84,7 @@ namespace Systems {
 			}
 			return path;
 		}
+
 
 		void Debug() const
 		{

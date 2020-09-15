@@ -11,6 +11,7 @@ namespace Systems {
 	class TileMap : public System
 	{
 	public:
+		// initialise the tilemap
 		void Init()
 		{
 			for (Entity entity : mEntities)

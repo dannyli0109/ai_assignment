@@ -10,7 +10,7 @@
 namespace Systems {
 	class AvoidBehavior : public System {
 	public:
-		
+		// Avoid behavior using line segment and circle intersection
 		void Update(float deltaTime) override
 		{
 			for (Entity entity : mEntities)

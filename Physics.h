@@ -7,6 +7,7 @@
 namespace Systems {
 	class Physics : public System {
 	public:
+		// upldate position using velocity and accerleration
 		void Update(float deltaTime) override
 		{
 			for (Entity entity : mEntities)

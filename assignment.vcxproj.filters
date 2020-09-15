@@ -15,6 +15,9 @@
     <Filter Include="Systems">
       <UniqueIdentifier>{80e82846-b0d1-4d71-8419-f4f054de09fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GameObjects">
+      <UniqueIdentifier>{f56bed21-46cc-499c-b0fe-36bbb17db545}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -28,6 +31,24 @@
     </ClCompile>
     <ClCompile Include="TextureManager.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Chicken.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="DecisionTree.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="ChickenDecisionTree.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="Mammal.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="Llama.cpp">
+      <Filter>GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="LlamaDecisionTree.cpp">
+      <Filter>GameObjects</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -67,9 +88,6 @@
     <ClInclude Include="Decision.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="State.h">
-      <Filter>Components</Filter>
-    </ClInclude>
     <ClInclude Include="Tile.h">
       <Filter>Components</Filter>
     </ClInclude>
@@ -91,14 +109,32 @@
     <ClInclude Include="AnimalStat.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="Animal.h">
-      <Filter>Systems</Filter>
-    </ClInclude>
     <ClInclude Include="Avoid.h">
       <Filter>Components</Filter>
     </ClInclude>
     <ClInclude Include="AvoidBehavior.h">
       <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Chicken.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="DecisionTree.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="ChickenDecisionTree.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Animal.h">
+      <Filter>Systems</Filter>
+    </ClInclude>
+    <ClInclude Include="Mammal.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="Llama.h">
+      <Filter>GameObjects</Filter>
+    </ClInclude>
+    <ClInclude Include="LlamaDecisionTree.h">
+      <Filter>GameObjects</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

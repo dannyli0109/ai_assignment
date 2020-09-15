@@ -1,5 +1,5 @@
 #pragma once
-
+#include <string>
 namespace Components
 {
 	struct AnimalStat
@@ -9,6 +9,8 @@ namespace Components
 		float decayRate;
 		float incrementRate;
 		bool drinking = false;
-		bool eating = false;
+		bool eating = false; 
+		bool hunting = false;
+		std::string decision = "";
 	};
 }
